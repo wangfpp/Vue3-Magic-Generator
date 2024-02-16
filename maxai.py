@@ -6,10 +6,12 @@ import requests
 from langchain_core.callbacks import CallbackManagerForLLMRun
 from langchain_core.language_models import LLM
 
+from config import MAX_AI_TOKEN
+
 
 class MaxAi(LLM, ABC):
     model: str = "gpt-4-turbo-preview"
-    api_key: str = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWJqZWN0Ijp7InVzZXJfaWQiOiJjNzBlNDhlYS0zNTBiLTQ1NDgtYTk1Yy0xNDE4MDcyYzkwZjYifSwidHlwZSI6InJlZnJlc2giLCJleHAiOjE3MTU2ODM3MDUsImlhdCI6MTcwNzkwNzcwNSwianRpIjoiN2M2YTZmNDgtYzhkZC00MjgwLTllZWMtMzEwMTEyYTgyZjdkIn0.hVEzUjH8tNx4queHcRVepBxz9HdzxhfEGIE0TqbU-hk"
+    api_key: str = MAX_AI_TOKEN
 
     def _llm_type(self):
         return "maxai"

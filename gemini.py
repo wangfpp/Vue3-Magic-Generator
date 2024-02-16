@@ -5,11 +5,12 @@ import google.generativeai as genai
 from langchain_core.callbacks import CallbackManagerForLLMRun
 from langchain_core.language_models import LLM
 
+from config import GEMINI_TOKEN
+
 
 class GeminiLLm(LLM, ABC):
-    # model: str = "gemini-pro"
-    model: str = "gemini-ultra"
-    api_key: str = "AIzaSyCZDJnxfGT_QoxlkwFlRaWlAyrCi8VWBoI"
+    model: str = "gemini-pro"
+    api_key: str = GEMINI_TOKEN
 
     def _llm_type(self):
         return "gemini"
