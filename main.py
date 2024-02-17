@@ -4,9 +4,12 @@ import shutil
 import time
 from typing import Any
 
+from langchain_community.chat_models import ChatOpenAI
 from langchain_core.output_parsers import StrOutputParser, JsonOutputParser
 from langchain_core.prompts import ChatPromptTemplate
 
+from config import OPEN_AI_MODEL, OPEN_AI_KEY, MODEL_PLATFORM
+from gemini import GeminiLLm
 from maxai import MaxAi
 from prompt import project, code
 
@@ -30,7 +33,17 @@ class VueOutputParser(StrOutputParser):
 
 
 def start_run(prompt_str, params, output_parser=StrOutputParser()):
-    llm = MaxAi()
+    llm = None
+    if MODEL_PLATFORM == 'maxai':
+        llm = MaxAi()
+    if MODEL_PLATFORM == 'gemini':
+        llm = GeminiLLm()
+    if MODEL_PLATFORM == 'openai':
+        llm = ChatOpenAI(openai_api_key=OPEN_AI_KEY, model=OPEN_AI_MODEL,
+                         temperature=0, verbose=True)
+    if llm is None:
+        # 抛异常
+        raise RuntimeError("未配置模型平台")
     prompt = ChatPromptTemplate.from_template(prompt_str, template_format="jinja2")
     while True:
         try:
