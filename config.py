@@ -1,6 +1,12 @@
+'''
+maxai
+openai
+gemini
+'''
+MODEL_PLATFORM = "openai"
 
+MAX_AI_TOKEN = ""
+GEMINI_TOKEN = ""
 
-
-MAX_AI_TOKEN = "<TOKEN>"
-GEMINI_TOKEN = "<TOKEN>"
-
+OPEN_AI_KEY = ""
+OPEN_AI_MODEL = ""
