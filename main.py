@@ -8,7 +8,7 @@ from langchain_community.chat_models import ChatOpenAI
 from langchain_core.output_parsers import StrOutputParser, JsonOutputParser
 from langchain_core.prompts import ChatPromptTemplate
 
-from config.config_dev import OPEN_AI_MODEL, OPEN_AI_KEY, MODEL_PLATFORM, MAX_AI_TOKEN, GEMINI_TOKEN, MAX_AI_MODEL
+from config.config import OPEN_AI_MODEL, OPEN_AI_KEY, MODEL_PLATFORM, MAX_AI_TOKEN, GEMINI_TOKEN, MAX_AI_MODEL
 from llm.gemini import GeminiLLm
 from utils.imgsearch import search_img
 from llm.maxai import MaxAi
