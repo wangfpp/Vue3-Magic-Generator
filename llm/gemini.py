@@ -5,7 +5,7 @@ import google.generativeai as genai
 from langchain_core.callbacks import CallbackManagerForLLMRun
 from langchain_core.language_models import LLM
 
-from config import GEMINI_TOKEN
+from config.config import GEMINI_TOKEN
 
 
 class GeminiLLm(LLM, ABC):
@@ -26,9 +26,10 @@ class GeminiLLm(LLM, ABC):
         genai.configure(api_key=self.api_key)
         model = genai.GenerativeModel('gemini-pro')
         response = model.generate_content(prompt, stream=True, generation_config={
-            'temperature': 0
+            'temperature': 0.1
         })
         res = ""
         for i in response:
+            print(i.text, end="")
             res += i.text
         return res

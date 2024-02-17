@@ -8,10 +8,11 @@ from langchain_community.chat_models import ChatOpenAI
 from langchain_core.output_parsers import StrOutputParser, JsonOutputParser
 from langchain_core.prompts import ChatPromptTemplate
 
-from config import OPEN_AI_MODEL, OPEN_AI_KEY, MODEL_PLATFORM
-from gemini import GeminiLLm
-from maxai import MaxAi
-from prompt import project, code
+from config.config_dev import OPEN_AI_MODEL, OPEN_AI_KEY, MODEL_PLATFORM, MAX_AI_TOKEN, GEMINI_TOKEN, MAX_AI_MODEL
+from llm.gemini import GeminiLLm
+from utils.imgsearch import search_img
+from llm.maxai import MaxAi
+from config.prompt import project, code, project_style, project_page
 
 
 class VueOutputParser(StrOutputParser):
@@ -35,12 +36,12 @@ class VueOutputParser(StrOutputParser):
 def start_run(prompt_str, params, output_parser=StrOutputParser()):
     llm = None
     if MODEL_PLATFORM == 'maxai':
-        llm = MaxAi()
+        llm = MaxAi(api_key=MAX_AI_TOKEN, model=MAX_AI_MODEL)
     if MODEL_PLATFORM == 'gemini':
-        llm = GeminiLLm()
+        llm = GeminiLLm(api_key=GEMINI_TOKEN)
     if MODEL_PLATFORM == 'openai':
         llm = ChatOpenAI(openai_api_key=OPEN_AI_KEY, model=OPEN_AI_MODEL,
-                         temperature=0, verbose=True)
+                         temperature=0.1, verbose=True)
     if llm is None:
         # 抛异常
         raise RuntimeError("未配置模型平台")
@@ -75,38 +76,64 @@ def start_run(prompt_str, params, output_parser=StrOutputParser()):
 '''
 
 # project_intro = '''我想要做一个关于软件、资源、教程、优惠卷分享网站，要求网站风格偏欧美、要有设计感。现在要求你来实现一下软件、资源、教程、优惠卷检索列表页面（在同一页面），用于用户快速定位到自己想要的内容'''
-project_intro = '''我想要做一个关于图片资源分享的官网首页，要求网站风格复古或怀旧风格、要有设计感。组件不能重复设计'''
+pre_code = ""
 
 
-def run():
+def generate_page(project_intro, style):
+    global pre_code
     t = time.time()
     project_title = f"demo{t}"
     project_path = r"C:\Users\Administrator\WebstormProjects\startproject\src"
     comp_path = os.path.join(project_path, "components", project_title)
     if not os.path.exists(comp_path):
         os.mkdir(comp_path)
+    project_intro = f'''我想要做一个{project_intro}。风格如下
+        {style}
+        '''
     res = start_run(project, {"q1": project_intro}, JsonOutputParser())
     print(f"按照你的需求意见为你分解出如下模块 {[i['moduleName'] for i in res]}")
+
     for idx, i in enumerate(res):
-        code_str = start_run(code, {"modules": res, "moduleName": i['moduleName']}, VueOutputParser())
+        img_style = i.get('imgStyle')
+        img_src = []
+        if img_style is not None:
+            img_src = search_img(img_style)
+            img_src = img_src[:min(len(img_src), 10)]
+        code_str = start_run(code,
+                             {"modules": res, "moduleName": i['moduleName'], 'imgSrc': img_src, "preCode": pre_code},
+                             VueOutputParser())
         print(code_str)
         app = f'''<template>
-{' '.join('<Part%s/>' % a for a in range(idx + 1))}
-</template>
+    {' '.join('<Part%s/>' % a for a in range(idx + 1))}
+    </template>
 
-<script lang="ts" setup>
-{' '.join('import Part%s from "./components/%s/Part%s.vue";' % (a, project_title, a) for a in range(idx + 1))}
-</script>
-<style>
-@import url("style.css");
-</style>
-'''
+    <script lang="ts" setup>
+    {' '.join('import Part%s from "./components/%s/Part%s.vue";' % (a, project_title, a) for a in range(idx + 1))}
+    </script>
+    <style>
+    @import url("style.css");
+    </style>
+    '''
         with open(f"Part{idx}.vue", 'w', encoding="utf-8") as f:
             f.write(code_str)
         shutil.move(f"Part{idx}.vue", comp_path)
         with open(os.path.join(project_path, f"App{t}.vue"), 'w', encoding="utf-8") as f:
             f.write(app)
+        pre_code = code_str
+
+
+def run():
+    project_intro = "关于软件、资源、教程、优惠卷分享网站。行业化、交互多、关注细节"
+    pages = start_run(project_page, {"projectName": project_intro}, JsonOutputParser())
+    style = start_run(project_style, {"projectName": project_intro}, StrOutputParser())
+    for i in pages:
+        while True:
+            try:
+                generate_page(i, style)
+            except Exception as e:
+                print(e)
+                pass
 
 
 if __name__ == "__main__":
-    print(run())
+    run()
