@@ -1,7 +1,6 @@
 import os.path
 import re
 import shutil
-import time
 from typing import Any
 
 from langchain_community.chat_models import ChatOpenAI
@@ -9,10 +8,13 @@ from langchain_core.output_parsers import StrOutputParser, JsonOutputParser
 from langchain_core.prompts import ChatPromptTemplate
 
 from config.config_dev import OPEN_AI_MODEL, OPEN_AI_KEY, MODEL_PLATFORM, MAX_AI_TOKEN, GEMINI_TOKEN, MAX_AI_MODEL
+from config.npm_config import HOME_PATH
 from llm.gemini import GeminiLLm
 from utils.imgsearch import search_img
 from llm.maxai import MaxAi
-from config.prompt import project, code, project_style, project_page, project_design
+from config.prompt import project, code, project_page, project_design
+from utils.npm import init_vue
+import webbrowser
 
 
 class VueOutputParser(StrOutputParser):
@@ -79,9 +81,16 @@ def start_run(prompt_str, params, output_parser=StrOutputParser()):
 pre_code = ""
 
 
-def generate_page(project_name, project_title, project_intro, style):
+def generate_page(project_name: str, project_title: str, project_intro: str, style: str):
+    '''
+    :param project_name: 项目名称
+    :param project_title: 页面名称
+    :param project_intro: 页面详情
+    :param style:
+    :return:
+    '''
     global pre_code
-    project_path = r"C:\Users\Administrator\WebstormProjects\startproject\src"
+    project_path = os.path.join(HOME_PATH, "vue", project_name, "src")
     comp_path = os.path.join(project_path, "components", project_name, project_title)
     views_path = os.path.join(project_path, "views", project_name)
     if not os.path.exists(comp_path):
@@ -93,7 +102,6 @@ def generate_page(project_name, project_title, project_intro, style):
         '''
     res = start_run(project, {"q1": project_intro}, JsonOutputParser())
     print(f"按照你的需求意见为你分解出如下模块 {[i['moduleName'] for i in res]}")
-
     for idx, i in enumerate(res):
         img_style = i.get('imgStyle')
         img_src = []
@@ -105,14 +113,14 @@ def generate_page(project_name, project_title, project_intro, style):
                              VueOutputParser())
         print(code_str)
         app = f'''<template>
-    {' '.join('<%s/>' % a['moduleEnName'] for a in res[:idx+1])}
+    {' '.join('<%s/>' % a['moduleEnName'] for a in res[:idx + 1])}
     </template>
 
     <script lang="ts" setup>
-    {' '.join('import %s from "../../components/%s/%s/%s.vue";' % (a['moduleEnName'], project_name, project_title, a['moduleEnName']) for a in res[:idx+1])}
+    {' '.join('import %s from "@/components/%s/%s/%s.vue";' % (a['moduleEnName'], project_name, project_title, a['moduleEnName']) for a in res[:idx + 1])}
     </script>
     <style>
-    @import url("../../style.css");
+    @import url("@/style.css");
     </style>
     '''
         with open(f"{i['moduleEnName']}.vue", 'w', encoding="utf-8") as f:
@@ -121,12 +129,25 @@ def generate_page(project_name, project_title, project_intro, style):
         with open(os.path.join(views_path, f"{project_title}.vue"), 'w', encoding="utf-8") as f:
             f.write(app)
         pre_code = code_str
+    webbrowser.open(f'http://localhost:5174/{project_name}/{project_title}')
 
 
 def run():
-    project_intro = "极具个人风格的博客，(复古或怀旧风格：这些网站通过使用旧式字体、配色和图像，营造出一种回顾过去的感觉。适用于展示历史、传统或复古产品的品牌。)"
+    project_intro = "黑客个人介绍页面，要求动效花里胡哨、复古，我叫刘郭浩，是个java开发工程师。"
     question = start_run(project_design, {"projectName": project_intro}, JsonOutputParser())
     pages = start_run(project_page, {"userQuestion": question}, JsonOutputParser())
+    project_name = pages['projectEnName']
+    init_vue(project_name)
+    with open(os.path.join(HOME_PATH, "base_vue", "src", "router", "index.js"), "r", encoding="utf-8") as f:
+        router_js = f.read().replace(
+            '${router}',
+            ','.join(["{%s}" % f'''path: '/{project_name}/{router['pageEnName']}',
+         name: "{project_name}{router['pageEnName']}",
+         component: () => import('@/views/{project_name}/{router['pageEnName']}.vue')
+         ''' for router in pages['pages']]))
+        with open(os.path.join(HOME_PATH, "vue", project_name, "src", "router", "index.js"), "w",
+                  encoding="utf-8") as fw:
+            fw.write(router_js)
     for i in pages['pages']:
         while True:
             try:

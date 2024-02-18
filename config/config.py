@@ -3,8 +3,8 @@ maxai
 openai
 gemini
 '''
-MODEL_PLATFORM = "maxai"
 
+MODEL_PLATFORM = "maxai"
 
 '''
 claude-2
