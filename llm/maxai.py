@@ -35,6 +35,7 @@ class MaxAi(LLM, ABC):
                 "prompt_name": "chat", "temperature": 0.1, "regenerate": False}
         url = {
             "gpt-4-0125-preview": "get_chatgpt_response",
+            "gpt-4-turbo-preview": "get_chatgpt_response",
             "gpt-4": "get_chatgpt_response",
             "mistral-7b-instruct": "get_freeai_chat_response",
             "claude-2": "get_claude_response",

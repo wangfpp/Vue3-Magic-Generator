@@ -8,11 +8,11 @@ from langchain_community.chat_models import ChatOpenAI
 from langchain_core.output_parsers import StrOutputParser, JsonOutputParser
 from langchain_core.prompts import ChatPromptTemplate
 
-from config.config import OPEN_AI_MODEL, OPEN_AI_KEY, MODEL_PLATFORM, MAX_AI_TOKEN, GEMINI_TOKEN, MAX_AI_MODEL
+from config.config_dev import OPEN_AI_MODEL, OPEN_AI_KEY, MODEL_PLATFORM, MAX_AI_TOKEN, GEMINI_TOKEN, MAX_AI_MODEL
 from llm.gemini import GeminiLLm
 from utils.imgsearch import search_img
 from llm.maxai import MaxAi
-from config.prompt import project, code, project_style, project_page
+from config.prompt import project, code, project_style, project_page, project_design
 
 
 class VueOutputParser(StrOutputParser):
@@ -79,14 +79,15 @@ def start_run(prompt_str, params, output_parser=StrOutputParser()):
 pre_code = ""
 
 
-def generate_page(project_intro, style):
+def generate_page(project_name, project_title, project_intro, style):
     global pre_code
-    t = time.time()
-    project_title = f"demo{t}"
     project_path = r"C:\Users\Administrator\WebstormProjects\startproject\src"
-    comp_path = os.path.join(project_path, "components", project_title)
+    comp_path = os.path.join(project_path, "components", project_name, project_title)
+    views_path = os.path.join(project_path, "views", project_name)
     if not os.path.exists(comp_path):
-        os.mkdir(comp_path)
+        os.makedirs(comp_path)
+    if not os.path.exists(views_path):
+        os.makedirs(views_path)
     project_intro = f'''我想要做一个{project_intro}。风格如下
         {style}
         '''
@@ -104,32 +105,33 @@ def generate_page(project_intro, style):
                              VueOutputParser())
         print(code_str)
         app = f'''<template>
-    {' '.join('<Part%s/>' % a for a in range(idx + 1))}
+    {' '.join('<%s/>' % a['moduleEnName'] for a in res[:idx+1])}
     </template>
 
     <script lang="ts" setup>
-    {' '.join('import Part%s from "./components/%s/Part%s.vue";' % (a, project_title, a) for a in range(idx + 1))}
+    {' '.join('import %s from "../../components/%s/%s/%s.vue";' % (a['moduleEnName'], project_name, project_title, a['moduleEnName']) for a in res[:idx+1])}
     </script>
     <style>
-    @import url("style.css");
+    @import url("../../style.css");
     </style>
     '''
-        with open(f"Part{idx}.vue", 'w', encoding="utf-8") as f:
+        with open(f"{i['moduleEnName']}.vue", 'w', encoding="utf-8") as f:
             f.write(code_str)
-        shutil.move(f"Part{idx}.vue", comp_path)
-        with open(os.path.join(project_path, f"App{t}.vue"), 'w', encoding="utf-8") as f:
+        shutil.move(f"{i['moduleEnName']}.vue", comp_path)
+        with open(os.path.join(views_path, f"{project_title}.vue"), 'w', encoding="utf-8") as f:
             f.write(app)
         pre_code = code_str
 
 
 def run():
-    project_intro = "关于软件、资源、教程、优惠卷分享网站。行业化、交互多、关注细节"
-    pages = start_run(project_page, {"projectName": project_intro}, JsonOutputParser())
-    style = start_run(project_style, {"projectName": project_intro}, StrOutputParser())
-    for i in pages:
+    project_intro = "极具个人风格的博客，(复古或怀旧风格：这些网站通过使用旧式字体、配色和图像，营造出一种回顾过去的感觉。适用于展示历史、传统或复古产品的品牌。)"
+    question = start_run(project_design, {"projectName": project_intro}, JsonOutputParser())
+    pages = start_run(project_page, {"userQuestion": question}, JsonOutputParser())
+    for i in pages['pages']:
         while True:
             try:
-                generate_page(i, style)
+                generate_page(pages['projectEnName'], i['pageEnName'], i, pages['style'])
+                break
             except Exception as e:
                 print(e)
                 pass
