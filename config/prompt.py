@@ -59,7 +59,7 @@ project = """
 
 回答之前请你将结果转换为json
 ```
-[{moduleName: "xxxx", content: "xxxxxx",imgStyle:"","moduleEnName":"模块英文驼峰名称",...},....其他模块]
+[{moduleName: "xxxx", content: "xxxxxx",imgStyle:"如果需要照片样例你想要什么样的风格","moduleEnName":"模块英文驼峰名称",...},....其他模块]
 ```
 
 你的回答

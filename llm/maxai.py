@@ -27,8 +27,6 @@ class MaxAi(LLM, ABC):
         headers = {
             "Authorization": f"Bearer {self.api_key}",
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-            "Cookie": "_ga_98QRV9PQP6=GS1.1.1707907672.2.1.1707908586.0.0.0",
-            "Origin": "chrome-extension://mhnlakgilnojmhinhkckjpncpbhabphi"
         }
         data = {"chat_history": [], "streaming": True, "message_content": [{"type": "text", "text": prompt}],
                 "chrome_extension_version": "3.0.0", "model_name": self.model, "prompt_id": "chat",

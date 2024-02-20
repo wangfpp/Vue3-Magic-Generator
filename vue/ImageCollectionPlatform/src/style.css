@@ -1,0 +1,10 @@
+body{
+  margin: 0;
+  padding: 0;
+}
+.el-menu{
+  border: 0!important;
+}
+.el-popper{
+  border: 0!important;
+}
