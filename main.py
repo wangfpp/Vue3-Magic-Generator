@@ -129,7 +129,7 @@ def generate_page(project_name: str, project_title: str, project_intro: str, sty
         with open(os.path.join(views_path, f"{project_title}.vue"), 'w', encoding="utf-8") as f:
             f.write(app)
         pre_code = code_str
-    webbrowser.open(f'http://localhost:5174/{project_name}/{project_title}')
+    webbrowser.open(f'http://localhost:5173/{project_name}/{project_title}')
 
 
 def run(project_intro):
