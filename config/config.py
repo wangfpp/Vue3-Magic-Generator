@@ -4,7 +4,7 @@ openai
 gemini
 '''
 
-MODEL_PLATFORM = "maxai"
+MODEL_PLATFORM = "gemini"
 
 '''
 claude-2
@@ -21,7 +21,7 @@ gpt-3.5-turbo
 MAX_AI_TOKEN = ""
 MAX_AI_MODEL = "claude-2"
 
-GEMINI_TOKEN = ""
+GEMINI_TOKEN = "AIzaSyA4kt6IlpNqZCxHQ9P4MWExIxxcmhAxIEM"
 GEMINI_MODEL = "gemini-pro"
 
 OPEN_AI_KEY = ""

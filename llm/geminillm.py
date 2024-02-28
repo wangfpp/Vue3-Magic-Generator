@@ -33,3 +33,4 @@ class GeminiLLm(LLM, ABC):
             print(i.text, end="")
             res += i.text
         return res
+
