@@ -9,7 +9,7 @@ from config.config import GEMINI_TOKEN
 
 
 class GeminiLLm(LLM, ABC):
-    model: str = "gemini-pro"
+    model: str = "gemini-1.5-pro"
     api_key: str = GEMINI_TOKEN
 
     def _llm_type(self):
@@ -24,7 +24,7 @@ class GeminiLLm(LLM, ABC):
     ) -> str:
         print(prompt)
         genai.configure(api_key=self.api_key)
-        model = genai.GenerativeModel('gemini-pro')
+        model = genai.GenerativeModel(self.model)
         response = model.generate_content(prompt, stream=True, generation_config={
             'temperature': 0.1
         })

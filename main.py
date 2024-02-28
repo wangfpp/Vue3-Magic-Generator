@@ -1,3 +1,4 @@
+import json
 import os.path
 import re
 import shutil
@@ -7,12 +8,13 @@ from langchain_community.chat_models import ChatOpenAI
 from langchain_core.output_parsers import StrOutputParser, JsonOutputParser
 from langchain_core.prompts import ChatPromptTemplate
 
-from config.config_dev import OPEN_AI_MODEL, OPEN_AI_KEY, MODEL_PLATFORM, MAX_AI_TOKEN, GEMINI_TOKEN, MAX_AI_MODEL
+from config.config_dev import OPEN_AI_MODEL, OPEN_AI_KEY, MODEL_PLATFORM, MAX_AI_TOKEN, GEMINI_TOKEN, MAX_AI_MODEL, \
+    GEMINI_MODEL
 from config.npm_config import HOME_PATH
-from llm.gemini import GeminiLLm
+from llm.geminillm import GeminiLLm
 from utils.imgsearch import search_img
 from llm.maxai import MaxAi
-from config.prompt import project, code, project_page, project_design
+from config.prompt import project, code, project_page, project_design, code_app
 from utils.npm import init_vue
 import webbrowser
 
@@ -40,7 +42,7 @@ def start_run(prompt_str, params, output_parser=StrOutputParser()):
     if MODEL_PLATFORM == 'maxai':
         llm = MaxAi(api_key=MAX_AI_TOKEN, model=MAX_AI_MODEL)
     if MODEL_PLATFORM == 'gemini':
-        llm = GeminiLLm(api_key=GEMINI_TOKEN)
+        llm = GeminiLLm(api_key=GEMINI_TOKEN, model=GEMINI_MODEL)
     if MODEL_PLATFORM == 'openai':
         llm = ChatOpenAI(openai_api_key=OPEN_AI_KEY, model=OPEN_AI_MODEL,
                          temperature=0.1, verbose=True)
@@ -77,11 +79,8 @@ def start_run(prompt_str, params, output_parser=StrOutputParser()):
 电子商务风格：专为在线购物设计，强调产品展示、简化购买流程，并提供明确的行动呼吁（CTA）按钮。
 '''
 
-# project_intro = '''我想要做一个关于软件、资源、教程、优惠卷分享网站，要求网站风格偏欧美、要有设计感。现在要求你来实现一下软件、资源、教程、优惠卷检索列表页面（在同一页面），用于用户快速定位到自己想要的内容'''
-pre_code = ""
 
-
-def generate_page(project_name: str, project_title: str, project_intro: str, style: str):
+def generate_page(project_name: str, project_title: str, project_intro: dict, style: str):
     '''
     :param project_name: 项目名称
     :param project_title: 页面名称
@@ -89,7 +88,8 @@ def generate_page(project_name: str, project_title: str, project_intro: str, sty
     :param style:
     :return:
     '''
-    global pre_code
+    pre_code = ""
+    # global pre_code
     project_path = os.path.join(HOME_PATH, "vue", project_name, "src")
     comp_path = os.path.join(project_path, "components", project_name, project_title)
     views_path = os.path.join(project_path, "views", project_name)
@@ -97,38 +97,38 @@ def generate_page(project_name: str, project_title: str, project_intro: str, sty
         os.makedirs(comp_path)
     if not os.path.exists(views_path):
         os.makedirs(views_path)
-    project_intro = f'''我想要做一个{project_intro}。风格如下
+    project_intro_str = f'''我想要做一个{project_intro}。风格如下
         {style}
         '''
-    res = start_run(project, {"q1": project_intro}, JsonOutputParser())
+    res = start_run(project, {"q1": project_intro_str}, JsonOutputParser())
+    project_intro['details'] = res
     print(f"按照你的需求意见为你分解出如下模块 {[i['moduleName'] for i in res]}")
+    vue_path = ' '.join('import %s from "@/components/%s/%s/%s.vue";' % (
+        a['moduleEnName'], project_name, project_title, a['moduleEnName']) for a in res)
+    app = start_run(code_app,
+                    {"modules": res, 'vuePath': vue_path},
+                    VueOutputParser())
     for idx, i in enumerate(res):
+        i['completed'] = False
         img_style = i.get('imgStyle')
         img_src = []
         if img_style is not None:
             img_src = search_img(img_style)
             img_src = img_src[:min(len(img_src), 10)]
         code_str = start_run(code,
-                             {"modules": res, "moduleName": i['moduleName'], 'imgSrc': img_src, "preCode": pre_code},
+                             {"modules": res, "moduleName": i['moduleName'], 'imgSrc': img_src, "app": app},
                              VueOutputParser())
+        i['code'] = code_str
         print(code_str)
-        app = f'''<template>
-    {' '.join('<%s/>' % a['moduleEnName'] for a in res[:idx + 1])}
-    </template>
-
-    <script lang="ts" setup>
-    {' '.join('import %s from "@/components/%s/%s/%s.vue";' % (a['moduleEnName'], project_name, project_title, a['moduleEnName']) for a in res[:idx + 1])}
-    </script>
-    <style>
-    @import url("@/style.css");
-    </style>
-    '''
+        pre_code += code_str
         with open(f"{i['moduleEnName']}.vue", 'w', encoding="utf-8") as f:
             f.write(code_str)
         shutil.move(f"{i['moduleEnName']}.vue", comp_path)
         with open(os.path.join(views_path, f"{project_title}.vue"), 'w', encoding="utf-8") as f:
             f.write(app)
-        pre_code = code_str
+        i['completed'] = True
+        with open(os.path.join(project_path, f"{project_title}.log"), 'w', encoding="utf-8") as f:
+            f.write(json.dumps(project_intro))
     webbrowser.open(f'http://localhost:5173/{project_name}/{project_title}')
 
 
@@ -158,5 +158,53 @@ def run(project_intro):
 
 
 if __name__ == "__main__":
-    run("""
-""")
+    run("""门店管理系统
+### 1. 用户权限和角色管理
+- 实现多种角色定义（管理员、店长、销售员、配送员等），各角色具有不同的操作权限。
+- 提供角色-specific功能访问，如销售员仅能管理商品和查看订单，不能进行退款审核。
+
+### 2. 登录账号
+- 安全的登录机制，支持密码和二次验证。
+- 忘记密码和密码重置功能。
+
+### 3. 基本信息管理
+- 门店基本信息编辑，包括校区选择、店铺描述、门店照片上传。
+
+### 4. 商品管理
+- 商品上架管理，包括选择商品、填写原始价格、实际价格，默认库存为0。
+- 商品分类与搜索功能，根据品牌、价格、评级等进行筛选。
+- 商品库存管理，包括库存预警、库存历史记录。
+- 商品批次追踪，以确保追溯性。
+
+### 5. 服务管理
+- 服务项目上架，如文档打印、照片打印等，包含服务名称、金额、描述。
+
+### 6. 订单管理
+- 订单处理流程，包括接收、回收、退货、指定配送员等。
+- 订单状态跟踪和管理。
+
+### 7. 优惠活动管理
+- 优惠设置，包括分类优惠、通用优惠、特定商品优惠。
+- 优惠券管理，包括金额、有效期、编码。
+- 商品价格折扣管理，包括最新价格，折扣说明。
+
+### 8. 用户与会员管理
+- 用户基本信息查阅，包括消费统计、用户画像等。
+- 会员系统，支持积分累计、兑换等。
+
+### 9. 配送与雇员管理
+- 配送员信息录入和管理。
+- 雇员信息管理，包括指定权限。
+
+### 10. 财务管理
+- 支付记录管理。
+- 门店对账，包括日报、周报、月报等。
+- 退款审核管理。
+
+### 11. 数据分析与报告
+- 销售、库存、用户行为等多维度数据分析。
+- 自动生成报告，辅助决策。
+
+### 12. 消息与反馈
+- 消息管理，包括短信、微信、站内消息日志查看。
+- 用户和商家反馈通道，以及在线客服功能。""")

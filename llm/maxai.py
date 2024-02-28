@@ -35,6 +35,8 @@ class MaxAi(LLM, ABC):
             "gpt-4-0125-preview": "get_chatgpt_response",
             "gpt-4-turbo-preview": "get_chatgpt_response",
             "gpt-4": "get_chatgpt_response",
+            "gpt-3.5-turbo": "get_chatgpt_response",
+            "gpt-3.5-turbo-1106": "get_chatgpt_response",
             "mistral-7b-instruct": "get_freeai_chat_response",
             "claude-2": "get_claude_response",
         }
