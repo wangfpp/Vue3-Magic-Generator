@@ -26,7 +26,7 @@ class GeminiLLm(LLM, ABC):
         genai.configure(api_key=self.api_key)
         model = genai.GenerativeModel(self.model)
         response = model.generate_content(prompt, stream=True, generation_config={
-            'temperature': 0.1
+            'temperature': 0.9
         })
         res = ""
         for i in response:

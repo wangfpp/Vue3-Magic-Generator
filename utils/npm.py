@@ -21,8 +21,10 @@ def run_cmd(command):
 
 
 def init_vue(project_name: str):
+    print(
+        rf'cd "{os.path.join(HOME_PATH, "vue")}" && "{NODE_PATH}{os.path.sep}npx" --yes create-vite@latest "{project_name}" --template vue')
     run_cmd(
-        rf'cd "{os.path.join(HOME_PATH, "vue")}" && "{NODE_PATH}\npx" --yes create-vite@latest "{project_name}" --template vue')
+        rf'cd "{os.path.join(HOME_PATH, "vue")}" && "{NODE_PATH}{os.path.sep}npx" --yes create-vite@latest "{project_name}" --template vue')
     shutil.copytree(os.path.join(HOME_PATH, "base_vue"), os.path.join(HOME_PATH, "vue", project_name),
                     dirs_exist_ok=True)
-    run_cmd(rf'cd "{os.path.join(HOME_PATH, "vue", project_name)}" && "{NODE_PATH}\npm" install')
+    run_cmd(rf'cd "{os.path.join(HOME_PATH, "vue", project_name)}" && "{NODE_PATH}{os.path.sep}npm" install')
