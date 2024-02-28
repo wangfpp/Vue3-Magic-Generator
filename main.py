@@ -8,7 +8,7 @@ from langchain_community.chat_models import ChatOpenAI
 from langchain_core.output_parsers import StrOutputParser, JsonOutputParser
 from langchain_core.prompts import ChatPromptTemplate
 
-from config.config_dev import OPEN_AI_MODEL, OPEN_AI_KEY, MODEL_PLATFORM, MAX_AI_TOKEN, GEMINI_TOKEN, MAX_AI_MODEL, \
+from config.config import OPEN_AI_MODEL, OPEN_AI_KEY, MODEL_PLATFORM, MAX_AI_TOKEN, GEMINI_TOKEN, MAX_AI_MODEL, \
     GEMINI_MODEL
 from config.npm_config import HOME_PATH
 from llm.geminillm import GeminiLLm
@@ -158,53 +158,4 @@ def run(project_intro):
 
 
 if __name__ == "__main__":
-    run("""门店管理系统
-### 1. 用户权限和角色管理
-- 实现多种角色定义（管理员、店长、销售员、配送员等），各角色具有不同的操作权限。
-- 提供角色-specific功能访问，如销售员仅能管理商品和查看订单，不能进行退款审核。
-
-### 2. 登录账号
-- 安全的登录机制，支持密码和二次验证。
-- 忘记密码和密码重置功能。
-
-### 3. 基本信息管理
-- 门店基本信息编辑，包括校区选择、店铺描述、门店照片上传。
-
-### 4. 商品管理
-- 商品上架管理，包括选择商品、填写原始价格、实际价格，默认库存为0。
-- 商品分类与搜索功能，根据品牌、价格、评级等进行筛选。
-- 商品库存管理，包括库存预警、库存历史记录。
-- 商品批次追踪，以确保追溯性。
-
-### 5. 服务管理
-- 服务项目上架，如文档打印、照片打印等，包含服务名称、金额、描述。
-
-### 6. 订单管理
-- 订单处理流程，包括接收、回收、退货、指定配送员等。
-- 订单状态跟踪和管理。
-
-### 7. 优惠活动管理
-- 优惠设置，包括分类优惠、通用优惠、特定商品优惠。
-- 优惠券管理，包括金额、有效期、编码。
-- 商品价格折扣管理，包括最新价格，折扣说明。
-
-### 8. 用户与会员管理
-- 用户基本信息查阅，包括消费统计、用户画像等。
-- 会员系统，支持积分累计、兑换等。
-
-### 9. 配送与雇员管理
-- 配送员信息录入和管理。
-- 雇员信息管理，包括指定权限。
-
-### 10. 财务管理
-- 支付记录管理。
-- 门店对账，包括日报、周报、月报等。
-- 退款审核管理。
-
-### 11. 数据分析与报告
-- 销售、库存、用户行为等多维度数据分析。
-- 自动生成报告，辅助决策。
-
-### 12. 消息与反馈
-- 消息管理，包括短信、微信、站内消息日志查看。
-- 用户和商家反馈通道，以及在线客服功能。""")
+    run("""需求输入""")
