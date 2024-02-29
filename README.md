@@ -15,6 +15,8 @@ Vue3-Magic-Generator采用创新的大模型技术，能够将您口中的简短
 - **🔮 代码自动编织**：通过Vue3和Element-Plus创建出优雅且功能齐全的前端代码，完全掌控于您。
 - **🚀 低门槛创造**：无需深入了解前端，您的想法就能转化为现实。
 - **⚡ 快速迭代**：从概念到产品仅需一瞬，让您迅速领先。
+  
+【人人皆可创建属于自己的Web服务-Vue3-Magic-Generator安装教程】 https://www.bilibili.com/video/BV1cy42167Sr/?share_source=copy_web&vd_source=1605ab9c4d2f80da19c95e4d41e6a8d1
 
 🚀 **全新升级**：我们激动地宣布，Vue3-Magic-Generator现已整合Flask框架支持，开创前后端一体化Web应用开发的新篇章。这一创新特性使得项目不仅仅局限于前端的视觉实现，而是拓展了后端的逻辑功能，实现了一个从数据库操作到用户界面完整流程的自动化生成。
 
